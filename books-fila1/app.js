@@ -1,28 +1,18 @@
-import { Sequelize } from 'sequelize';
+import express from 'express';
+import { initDB } from './src/config/database.js';
+import bookRoutes from './src/routes/book.routes.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
-  {
-    host: process.env.DB_HOST,
-    dialect: process.env.DB_DIALECT,
-    port: process.env.DB_PORT || 3306
-  }
-);
+const app = express();
+app.use(express.json());
+app.use('/api/books', bookRoutes);
 
-export const initDB = async () => {
-  try {
-    await sequelize.authenticate();
-    console.log('Conexión a MySQL establecida.');
-    await sequelize.sync({ alter: true });
-    console.log('Modelos sincronizados.');
-  } catch (error) {
-    console.error('Error al conectar a la base de datos:', error);
-  }
-};
+const PORT = process.env.PORT || 3000;
 
-export default sequelize;
+initDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  });
+});
